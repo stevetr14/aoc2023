@@ -17,7 +17,7 @@ def construct_plan():
     return plan
 
 
-def get_target(seed: int, rows_: list[list[int, int, int]]) -> int:
+def get_target_from_seed(seed: int, rows_: list[list[int, int, int]]) -> int:
     for row in rows_:
         destination, source, length = row
         if seed < source:
@@ -74,13 +74,13 @@ def part_one():
     locations = []
 
     for seed in seeds:
-        a = get_target(seed, seed_to_soil)
-        b = get_target(a, soil_to_fertilizer)
-        c = get_target(b, fertiliser_to_water)
-        d = get_target(c, water_to_light)
-        e = get_target(d, light_to_temp)
-        f = get_target(e, temp_to_humidity)
-        location = get_target(f, humidity_to_location)
+        a = get_target_from_seed(seed, seed_to_soil)
+        b = get_target_from_seed(a, soil_to_fertilizer)
+        c = get_target_from_seed(b, fertiliser_to_water)
+        d = get_target_from_seed(c, water_to_light)
+        e = get_target_from_seed(d, light_to_temp)
+        f = get_target_from_seed(e, temp_to_humidity)
+        location = get_target_from_seed(f, humidity_to_location)
         print(seed, a, b, c, d, e, f, location)
 
         locations.append(location)
@@ -107,24 +107,29 @@ def part_two():
     batched_pairs = list(batched(plan["seeds"][0], 2))
 
     # Inspect by 👀
+    # TODO: Get the lowest location range via comparison instead
     lowest_location_range = humidity_to_location[4]
-    d, s, r = lowest_location_range
+    destination, _, range_length = lowest_location_range
 
     found = False
 
-    for i in range(d, d + r - 1):
+    # Start from the lowest location destination value in the input (something like 0 100000000 200000000)
+    for i in range(destination, destination + range_length - 1):
         humidity = get_seed_from_target(i, humidity_to_location)
         f = get_seed_from_target(humidity, temp_to_humidity)
         e = get_seed_from_target(f, light_to_temp)
         d = get_seed_from_target(e, water_to_light)
         c = get_seed_from_target(d, fertiliser_to_water)
         b = get_seed_from_target(c, soil_to_fertilizer)
+        # Get seed back by calculating backwards from location
         seed = get_seed_from_target(b, seed_to_soil)
 
         for pair in batched_pairs:
             start_, length = pair
+            # If the computed seed is within the range of any pair from the input then the location is valid
             if start_ <= seed <= start_ + length - 1:
                 found = True
+                # Display the first location found
                 print(i)
                 break
 
@@ -147,12 +152,12 @@ def test_day_5():
         [230_758_172, 30_039_204, 163_596_268],
     ]
 
-    assert get_target(49, rows) == 42
-    assert get_target(69, rows) == 0
-    assert get_target(140, rows) == 138
-    assert get_target(252, rows) == 250
-    assert get_target(306, rows) == 3306
-    assert get_target(30_039_210, rows) == 230_758_178
+    assert get_target_from_seed(49, rows) == 42
+    assert get_target_from_seed(69, rows) == 0
+    assert get_target_from_seed(140, rows) == 138
+    assert get_target_from_seed(252, rows) == 250
+    assert get_target_from_seed(306, rows) == 3306
+    assert get_target_from_seed(30_039_210, rows) == 230_758_178
 
     assert get_seed_from_target(42, rows) == 49
     assert get_seed_from_target(0, rows) == 69
