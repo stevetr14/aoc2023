@@ -1,11 +1,10 @@
-import itertools
 import time
 
-from utils import parse_input
+from utils import parse_input, batched
 
 
 def construct_plan():
-    sections = parse_input("test.txt", "\n\n")
+    sections = parse_input("day_5.txt", "\n\n")
     plan = dict()
 
     for section in sections:
@@ -43,14 +42,22 @@ def get_seed_from_target(target: int, rows_: list[list[int, int, int]]) -> int:
         if target > destination + length:
             continue
 
-        if target > destination:
-            seed = target - destination + source
+        # Check for inclusive range
+        if destination <= target <= destination + length - 1:
+            if target > destination:
+                seed = target - destination + source
+            elif target == destination:
+                seed = source
+            else:
+                seed = destination - target + source
             return seed
     else:
         return target
 
 
 def part_one():
+    start_time = time.time()
+
     plan = construct_plan()
 
     seeds = plan["seeds"][0]
@@ -80,8 +87,13 @@ def part_one():
 
     print("Lowest location", min(locations))
 
+    end_time = time.time()
+    print("\nSeconds taken: ", end_time - start_time)
+
 
 def part_two():
+    start_time = time.time()
+
     plan = construct_plan()
 
     seed_to_soil = plan["seed-to-soil map"]
@@ -92,41 +104,65 @@ def part_two():
     temp_to_humidity = plan["temperature-to-humidity map"]
     humidity_to_location = plan["humidity-to-location map"]
 
-    # Inspect by 👀
-    lowest_location_range = humidity_to_location[2]
-    d, s, r = lowest_location_range
-    location = get_seed_from_target(s + r, humidity_to_location)
-    f = get_seed_from_target(location, temp_to_humidity)
-    e = get_seed_from_target(f, light_to_temp)
-    d = get_seed_from_target(e, water_to_light)
-    c = get_seed_from_target(d, fertiliser_to_water)
-    b = get_seed_from_target(c, soil_to_fertilizer)
-    seed = get_seed_from_target(b, seed_to_soil)
+    batched_pairs = list(batched(plan["seeds"][0], 2))
 
-    print(seed)
+    # Inspect by 👀
+    lowest_location_range = humidity_to_location[4]
+    d, s, r = lowest_location_range
+
+    found = False
+
+    for i in range(d, d + r - 1):
+        humidity = get_seed_from_target(i, humidity_to_location)
+        f = get_seed_from_target(humidity, temp_to_humidity)
+        e = get_seed_from_target(f, light_to_temp)
+        d = get_seed_from_target(e, water_to_light)
+        c = get_seed_from_target(d, fertiliser_to_water)
+        b = get_seed_from_target(c, soil_to_fertilizer)
+        seed = get_seed_from_target(b, seed_to_soil)
+
+        for pair in batched_pairs:
+            start_, length = pair
+            if start_ <= seed <= start_ + length - 1:
+                found = True
+                print(i)
+                break
+
+        if found:
+            break
+
+    end_time = time.time()
+    print("\nSeconds taken: ", end_time - start_time)
+
+
+def test_day_5():
+    rows = [
+        # D, S, R
+        [0, 69, 1],
+        [18, 25, 70],
+        [70, 72, 80],
+        [210, 200, 1],
+        [250, 252, 1],
+        [3300, 300, 1600],
+        [230_758_172, 30_039_204, 163_596_268],
+    ]
+
+    assert get_target(49, rows) == 42
+    assert get_target(69, rows) == 0
+    assert get_target(140, rows) == 138
+    assert get_target(252, rows) == 250
+    assert get_target(306, rows) == 3306
+    assert get_target(30_039_210, rows) == 230_758_178
+
+    assert get_seed_from_target(42, rows) == 49
+    assert get_seed_from_target(0, rows) == 69
+    assert get_seed_from_target(138, rows) == 140
+    assert get_seed_from_target(250, rows) == 252
+    assert get_seed_from_target(3306, rows) == 306
+    assert get_seed_from_target(230_758_178, rows) == 30_039_210
 
 
 if __name__ == "__main__":
-    # start = time.time()
-    # part_one()
+    part_one()
     part_two()
-    # end = time.time()
-    # print("\nSeconds taken: ", end - start)  # ~0.001 sec
-
-    # rows = [
-    #     # D, S, R
-    #     [0, 69, 1],
-    #     [18, 25, 70],
-    #     [70, 72, 80],
-    #     [210, 200, 1],
-    #     [250, 252, 1],
-    #     [3300, 300, 1600],
-    #     [230_758_172, 30_039_204, 163_596_268],
-    # ]
-    # assert get_target(49, rows) == 42
-    # assert get_target(69, rows) == 0
-    # assert get_target(140, rows) == 138
-    # assert get_target(252, rows) == 250
-    # assert get_target(306, rows) == 3306
-    # assert get_target(30_039_210, rows) == 230_758_178
-
+    # test_day_5()
