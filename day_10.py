@@ -21,7 +21,7 @@ def is_top_path_valid(current_pipe_: str, next_pipe_: str) -> bool:
         return False
 
     # Pipes that can connect to the given x, y coordinate from the top.
-    return next_pipe_ in "|7FS"
+    return next_pipe_ in "|7F"
 
 
 def is_bottom_path_valid(current_pipe_: str, next_pipe_: str) -> bool:
@@ -30,7 +30,7 @@ def is_bottom_path_valid(current_pipe_: str, next_pipe_: str) -> bool:
         return False
 
     # Pipes that can connect to the given x, y coordinate from the bottom.
-    return next_pipe_ in "|LJS"
+    return next_pipe_ in "|LJ"
 
 
 def is_left_path_valid(current_pipe_: str, next_pipe_: str) -> bool:
@@ -39,7 +39,7 @@ def is_left_path_valid(current_pipe_: str, next_pipe_: str) -> bool:
         return False
 
     # Pipes that can connect to the given x, y coordinate from the left.
-    return next_pipe_ in "-LFS"
+    return next_pipe_ in "-LF"
 
 
 def is_right_path_valid(current_pipe_: str, next_pipe_: str) -> bool:
@@ -48,7 +48,7 @@ def is_right_path_valid(current_pipe_: str, next_pipe_: str) -> bool:
         return False
 
     # Pipes that can connect to the given x, y coordinate from the right.
-    return next_pipe_ in "-7JS"
+    return next_pipe_ in "-7J"
 
 
 def part_one():
@@ -58,23 +58,39 @@ def part_one():
     steps = 0
 
     seen = []
+    is_loop_closed = False
 
-    while get_starting_point(lines) not in seen:
+    while not is_loop_closed:
         current_pipe = lines[y][x]
 
-        # TODO: handle going back straight to "S".
+        # Reset next point, any valid path should change this to be not None.
+        next_point = None
+
         if is_top_path_valid(current_pipe, lines[y - 1][x]) and (x, y - 1) not in seen:
+            next_point = lines[y - 1][x]
+            # Go up
             y -= 1
             steps += 1
         elif is_right_path_valid(current_pipe, lines[y][x + 1]) and (x + 1, y) not in seen:
+            next_point = lines[y][x + 1]
+            # Go right
             x += 1
             steps += 1
-        elif is_left_path_valid(current_pipe, lines[y][x - 1]) and (x - 1, y) not in seen:
-            x -= 1
-            steps += 1
         elif is_bottom_path_valid(current_pipe, lines[y + 1][x]) and (x, y + 1) not in seen:
+            next_point = lines[y + 1][x]
+            # Go down
             y += 1
             steps += 1
+        elif is_left_path_valid(current_pipe, lines[y][x - 1]) and (x - 1, y) not in seen:
+            next_point = lines[y][x - 1]
+            # Go left
+            x -= 1
+            steps += 1
+
+        # If there is more valid path, that means we hit the starting point "S" again. Add 1 step and end the loop.
+        if next_point is None:
+            steps += 1
+            is_loop_closed = True
 
         seen.append((x, y))
         print(f"At point {x}-{y} {lines[y][x]}")
