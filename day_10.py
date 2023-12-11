@@ -1,5 +1,8 @@
+import itertools
 import math
-from collections import defaultdict
+import re
+from collections import Counter
+from pprint import pprint
 
 from utils import parse_input
 
@@ -55,6 +58,8 @@ def is_right_path_valid(current_pipe_: str, next_pipe_: str) -> bool:
 def part_one():
     lines = parse_input("day_10.txt")
 
+    max_x = len(lines[0]) - 1
+    max_y = len(lines) - 1
     x, y = get_starting_point(lines)
     steps = 0
 
@@ -72,12 +77,12 @@ def part_one():
             # Go up
             y -= 1
             steps += 1
-        elif is_right_path_valid(current_pipe, lines[y][x + 1]) and (x + 1, y) not in seen:
+        elif x < max_x and is_right_path_valid(current_pipe, lines[y][x + 1]) and (x + 1, y) not in seen:
             next_point = lines[y][x + 1]
             # Go right
             x += 1
             steps += 1
-        elif is_bottom_path_valid(current_pipe, lines[y + 1][x]) and (x, y + 1) not in seen:
+        elif y < max_y and is_bottom_path_valid(current_pipe, lines[y + 1][x]) and (x, y + 1) not in seen:
             next_point = lines[y + 1][x]
             # Go down
             y += 1
@@ -101,8 +106,10 @@ def part_one():
 
 
 def part_two():
-    lines = parse_input("day_10.txt")
+    lines = parse_input("test.txt")
 
+    max_x = len(lines[0]) - 1
+    max_y = len(lines) - 1
     x, y = get_starting_point(lines)
     steps = 0
 
@@ -120,12 +127,12 @@ def part_two():
             # Go up
             y -= 1
             steps += 1
-        elif is_right_path_valid(current_pipe, lines[y][x + 1]) and (x + 1, y) not in seen:
+        elif x < max_x and is_right_path_valid(current_pipe, lines[y][x + 1]) and (x + 1, y) not in seen:
             next_point = lines[y][x + 1]
             # Go right
             x += 1
             steps += 1
-        elif is_bottom_path_valid(current_pipe, lines[y + 1][x]) and (x, y + 1) not in seen:
+        elif y < max_y and is_bottom_path_valid(current_pipe, lines[y + 1][x]) and (x, y + 1) not in seen:
             next_point = lines[y + 1][x]
             # Go down
             y += 1
@@ -144,18 +151,35 @@ def part_two():
 
         seen.append((x, y))
 
+    count = 0
+    test = []
+
     for y, line in enumerate(lines):
         row = ""
         for x, char in enumerate(line):
             if (x, y) in seen:
-                row += "x"
+                index = seen.index((x, y))
+                row += f" {index:03d} "
             else:
-                row += "."
-
+                row += "  .  "
+        test.append(row)
         print(row)
+
+        # test_1 = list(re.findall(r"-(o+)-", row))
+        # test_2 = [len(item) for item in re.findall(r"-+", row)]
+        # test_3 = list(zip(test_1, list(itertools.pairwise(test_2))))
+        #
+        # for item in test_3:
+        #     mark, walls = item
+        #     if any(n % 2 == 1 for n in walls):
+        #         print(row, len(mark))
+        #         count += len(mark)
+
+    # pprint(test)
+
+    # print(count)
 
 
 if __name__ == "__main__":
     # part_one()
     part_two()
-
