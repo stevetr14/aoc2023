@@ -152,32 +152,25 @@ def part_two():
         seen.append((x, y))
 
     count = 0
-    test = []
-
     for y, line in enumerate(lines):
         row = ""
         for x, char in enumerate(line):
             if (x, y) in seen:
-                index = seen.index((x, y))
-                row += f" {index:03d} "
+                row += "-"
             else:
-                row += "  .  "
-        test.append(row)
-        print(row)
+                row += "o"
 
-        # test_1 = list(re.findall(r"-(o+)-", row))
-        # test_2 = [len(item) for item in re.findall(r"-+", row)]
-        # test_3 = list(zip(test_1, list(itertools.pairwise(test_2))))
-        #
-        # for item in test_3:
-        #     mark, walls = item
-        #     if any(n % 2 == 1 for n in walls):
-        #         print(row, len(mark))
-        #         count += len(mark)
+        test_1 = list(re.findall(r"-(o+)-", row))
+        test_2 = [len(item) for item in re.findall(r"-+", row)]
+        test_3 = list(zip(test_1, list(itertools.pairwise(test_2))))
 
-    # pprint(test)
+        for item in test_3:
+            mark, walls = item
+            if any(n % 2 == 1 for n in walls):
+                print(row, len(mark))
+                count += len(mark)
 
-    # print(count)
+    print(count)
 
 
 if __name__ == "__main__":
