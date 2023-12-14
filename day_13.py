@@ -148,40 +148,40 @@ def part_two():
         print("Rows: ", reflected_rows)
         print("Cols: ", reflected_cols)
 
-        test_1 = Counter(reflected_rows).items()
-        test_2 = Counter(reflected_cols).items()
+        reflected_rows_counter = Counter(reflected_rows).items()
+        reflected_cols_counter = Counter(reflected_cols).items()
 
         num_to_add = 0
 
-        if len(test_1) == 2 and num_to_add == 0:
-            # print("Rows: ", reflected_rows)
-            for k, v in Counter(reflected_rows).items():
+        if len(reflected_rows_counter) == 2 and num_to_add == 0:
+            for k, v in reflected_rows_counter:
                 if v == 1:
                     num_to_add = 100 * k
                     print("Row: ", k)
                     break
-            # else:
-            #     total += 100 * reflected_rows[0]
-            #     print("Row: ", reflected_rows[0])
 
-        if len(test_2) == 2 and num_to_add == 0:
-            # print("Cols: ", reflected_cols)
-            for k, v in Counter(reflected_cols).items():
+        if len(reflected_cols_counter) == 2 and num_to_add == 0:
+            for k, v in reflected_cols_counter:
                 if v == 1:
                     num_to_add = k
                     print("Col: ", k)
                     break
-            # else:
-            #     total += reflected_cols[0]
-            #     print("Col: ", reflected_cols[0])
 
-        if test_1 and num_to_add == 0:
+        if not reflected_rows_counter and reflected_cols_counter and num_to_add == 0:
+            num_to_add = reflected_cols[0]
+            print("Col: ", reflected_cols[0])
+
+        if not reflected_cols_counter and reflected_rows_counter and num_to_add == 0:
             num_to_add = 100 * reflected_rows[0]
             print("Row: ", reflected_rows[0])
 
-        if test_2 and num_to_add == 0:
-            num_to_add = reflected_cols[0]
-            print("Col: ", reflected_cols[0])
+        if len(reflected_rows_counter) == len(reflected_cols_counter) and num_to_add == 0:
+            if len(reflected_rows) < len(reflected_cols):
+                num_to_add = 100 * reflected_rows[0]
+                print("Row: ", reflected_rows[0])
+            else:
+                num_to_add = reflected_cols[0]
+                print("Col: ", reflected_cols[0])
 
         total += num_to_add
 
