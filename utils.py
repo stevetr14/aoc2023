@@ -16,3 +16,7 @@ def batched(iterable, n):
     it = iter(iterable)
     while batch := tuple(islice(it, n)):
         yield batch
+
+
+def transpose_list(list_: list[any]) -> list[any]:
+    return list(map(list, zip(*list_)))
