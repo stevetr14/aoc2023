@@ -1,7 +1,7 @@
 from collections import Counter
 from pprint import pprint
 
-from utils import parse_input
+from utils import parse_input, transpose_list
 
 
 def part_one():
@@ -77,7 +77,7 @@ def part_one():
 
 
 def part_two():
-    patterns = parse_input("day_13.txt", "\n\n")
+    patterns = parse_input("test.txt", "\n\n")
 
     total = 0
 
@@ -85,20 +85,34 @@ def part_two():
         lines = pattern.strip().split("\n")
         transposed_lines = ["".join(item) for item in list(zip(*lines)) if item]
 
-        # Check rows
-        num_of_rows = len(lines)
         num_of_cols = len(transposed_lines)
 
         print(index)
 
         # Rows
         reflected_rows = []
+        reflected_cols = []
         for col_i in range(num_of_cols - 1):
             lines_ = ["".join(item) for item in zip(*(transposed_lines[:col_i] + transposed_lines[col_i + 1:]))]
+            transposed_lines_ = ["".join(item) for item in transpose_list(lines_)]
+
+            for row in lines_:
+                print(row)
+
+            print()
+
+            for col in transposed_lines_:
+                print(col)
+
+            print(col_i, "\n")
+
             a = Counter(lines_)
+            b = Counter(transposed_lines_)
+            num_of_rows_ = len(lines_)
+            num_of_cols_ = len(transposed_lines_)
 
             if a[lines_[0]] >= 2:
-                for i in range(num_of_rows - 1):
+                for i in range(num_of_rows_ - 1):
                     # Short-circuit when any non-reflection is detected in between.
                     if a[lines_[i]] < 2:
                         break
@@ -109,7 +123,7 @@ def part_two():
 
             # Check row reflection from bottom first
             if a[lines_[-1]] >= 2:
-                for i in range(num_of_rows - 1, 1, -1):
+                for i in range(num_of_rows_ - 1, 1, -1):
                     # Short-circuit when any non-reflection is detected in between.
                     if a[lines_[i]] < 2:
                         break
@@ -118,15 +132,8 @@ def part_two():
                         reflected_rows.append(i)
                         break
 
-        # Columns
-        reflected_cols = []
-        for row_i in range(num_of_rows - 1):
-            transposed_lines_ = ["".join(item) for item in zip(*(lines[:row_i] + lines[row_i + 1:]))]
-            b = Counter(transposed_lines_)
-
-            # Check column reflection from right first
             if b[transposed_lines_[0]] >= 2:
-                for i in range(num_of_cols - 1):
+                for i in range(num_of_cols_ - 1):
                     # Short-circuit when any non-reflection is detected in between.
                     if b[transposed_lines_[i]] < 2:
                         break
@@ -136,7 +143,7 @@ def part_two():
                         break
 
             if b[transposed_lines_[-1]] >= 2:
-                for i in range(num_of_cols - 1, 1, -1):
+                for i in range(num_of_cols_ - 1, 1, -1):
                     # Short-circuit when any non-reflection is detected in between.
                     if b[transposed_lines_[i]] < 2:
                         break
@@ -147,45 +154,6 @@ def part_two():
 
         print("Rows: ", reflected_rows)
         print("Cols: ", reflected_cols)
-
-        reflected_rows_counter = Counter(reflected_rows).items()
-        reflected_cols_counter = Counter(reflected_cols).items()
-
-        num_to_add = 0
-
-        if len(reflected_rows_counter) == 2 and num_to_add == 0:
-            for k, v in reflected_rows_counter:
-                if v == 1:
-                    num_to_add = 100 * k
-                    print("Row: ", k)
-                    break
-
-        if len(reflected_cols_counter) == 2 and num_to_add == 0:
-            for k, v in reflected_cols_counter:
-                if v == 1:
-                    num_to_add = k
-                    print("Col: ", k)
-                    break
-
-        if not reflected_rows_counter and reflected_cols_counter and num_to_add == 0:
-            num_to_add = reflected_cols[0]
-            print("Col: ", reflected_cols[0])
-
-        if not reflected_cols_counter and reflected_rows_counter and num_to_add == 0:
-            num_to_add = 100 * reflected_rows[0]
-            print("Row: ", reflected_rows[0])
-
-        if len(reflected_rows_counter) == len(reflected_cols_counter) and num_to_add == 0:
-            if len(reflected_rows) < len(reflected_cols):
-                num_to_add = 100 * reflected_rows[0]
-                print("Row: ", reflected_rows[0])
-            else:
-                num_to_add = reflected_cols[0]
-                print("Col: ", reflected_cols[0])
-
-        total += num_to_add
-
-        print()
 
     print("Part 2: ", total)
 
