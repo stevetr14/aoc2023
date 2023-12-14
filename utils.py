@@ -20,3 +20,11 @@ def batched(iterable, n):
 
 def transpose_list(list_: list[any]) -> list[any]:
     return list(map(list, zip(*list_)))
+
+
+def rotate_matrix_90_anti_clockwise(matrix: list[any]) -> list[any]:
+    return [[x[i] for x in matrix] for i in range(len(matrix))][::-1]
+
+
+def rotate_matrix_90_clockwise(matrix: list[any]) -> list[any]:
+    return list(list(x)[::-1] for x in zip(*matrix))
