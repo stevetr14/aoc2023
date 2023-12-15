@@ -160,15 +160,7 @@ def part_two():
             else:
                 row += "o"
 
-        test_1 = list(re.findall(r"-(o+)-", row))
-        test_2 = [len(item) for item in re.findall(r"-+", row)]
-        test_3 = list(zip(test_1, list(itertools.pairwise(test_2))))
-
-        for item in test_3:
-            mark, walls = item
-            if any(n % 2 == 1 for n in walls):
-                print(row, len(mark))
-                count += len(mark)
+        print(row)
 
     print(count)
 

@@ -8,6 +8,7 @@ def part_one():
     patterns = parse_input("day_13.txt", "\n\n")
 
     total = 0
+    original_reflections = dict()
 
     for index, pattern in enumerate(patterns, start=1):
         lines = pattern.strip().split("\n")
@@ -20,8 +21,6 @@ def part_one():
         a = Counter(lines)
         b = Counter(transposed_lines)
 
-        print(index)
-
         num_to_add = 0
 
         # Check row reflection from bottom first
@@ -32,7 +31,8 @@ def part_one():
                     break
 
                 if lines[i] == lines[i - 1] and a[lines[i]] < 4:
-                    print("Row <-", i - 1)
+                    # print("Row <-", i - 1)
+                    original_reflections[index] = {"row": i}
                     num_to_add = 100 * i
                     break
 
@@ -43,7 +43,8 @@ def part_one():
                     break
 
                 if lines[i] == lines[i + 1] and a[lines[i]] < 4:
-                    print("Row ->", i)
+                    # print("Row ->", i)
+                    original_reflections[index] = {"row": i + 1}
                     num_to_add = 100 * (i + 1)
                     break
 
@@ -55,7 +56,8 @@ def part_one():
                     break
 
                 if transposed_lines[i] == transposed_lines[i - 1] and b[transposed_lines[i]] < 4:
-                    print("Col <-", i - 1)
+                    # print("Col <-", i - 1)
+                    original_reflections[index] = {"col": i}
                     num_to_add = i
                     break
 
@@ -66,17 +68,19 @@ def part_one():
                     break
 
                 if transposed_lines[i] == transposed_lines[i + 1] and b[transposed_lines[i]] < 4:
-                    print("Col ->", i)
+                    # print("Col ->", i)
+                    original_reflections[index] = {"col": i + 1}
                     num_to_add = i + 1
                     break
 
         total += num_to_add
-        print()
 
     print("Part 1: ", total)
 
+    return original_reflections
 
-def part_two():
+
+def part_two(original_reflections: dict[dict[str, int]]):
     patterns = parse_input("day_13.txt", "\n\n")
 
     total = 0
@@ -154,15 +158,17 @@ def part_two():
         num_to_add = 0
 
         if len(reflected_rows_counter) == 2 and num_to_add == 0:
-            for k, v in reflected_rows_counter:
-                if v == 1:
+            old_reflection_row = original_reflections[index].get("row")
+            for k, _ in reflected_rows_counter:
+                if k != old_reflection_row:
                     num_to_add = 100 * k
                     print("Row: ", k)
                     break
 
         if len(reflected_cols_counter) == 2 and num_to_add == 0:
-            for k, v in reflected_cols_counter:
-                if v == 1:
+            old_reflection_col = original_reflections[index].get("col")
+            for k, _ in reflected_cols_counter:
+                if k != old_reflection_col:
                     num_to_add = k
                     print("Col: ", k)
                     break
@@ -176,7 +182,14 @@ def part_two():
             print("Row: ", reflected_rows[0])
 
         if len(reflected_rows_counter) == len(reflected_cols_counter) and num_to_add == 0:
-            if len(reflected_rows) < len(reflected_cols):
+            print("Old: ", original_reflections[index])
+            if len(reflected_rows) == 2:
+                num_to_add = reflected_cols[0]
+                print("Col: ", reflected_cols[0])
+            elif len(reflected_cols) == 2:
+                num_to_add = 100 * reflected_rows[0]
+                print("Row: ", reflected_rows[0])
+            elif len(reflected_rows) < len(reflected_cols):
                 num_to_add = 100 * reflected_rows[0]
                 print("Row: ", reflected_rows[0])
             else:
@@ -191,5 +204,5 @@ def part_two():
 
 
 if __name__ == "__main__":
-    # part_one()
-    part_two()
+    originals = part_one()
+    part_two(originals)
