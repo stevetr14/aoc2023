@@ -1,117 +1,160 @@
+from enum import Enum
 from pprint import pprint
 
 from utils import parse_input
 
 
-LEFT_RIGHT = ["<", ">"]
-UP_DOWN = ["^", "v"]
+class Direction:
+    UP = "^"
+    DOWN = "v"
+    LEFT = "<"
+    RIGHT = ">"
+
+
+LEFT_RIGHT = [Direction.LEFT, Direction.RIGHT]
+UP_DOWN = [Direction.UP, Direction.DOWN]
 
 
 def rotate_direction_90_left(direction: str) -> str:
     match direction:
-        case "^":
-            return "<"
-        case ">":
-            return "^"
-        case "<":
-            return "v"
-        case "v":
-            return ">"
+        case Direction.UP:
+            return Direction.LEFT
+        case Direction.RIGHT:
+            return Direction.UP
+        case Direction.LEFT:
+            return Direction.DOWN
+        case Direction.DOWN:
+            return Direction.RIGHT
 
 
 def rotate_direction_90_right(direction: str) -> str:
     match direction:
-        case "^":
-            return ">"
-        case ">":
-            return "v"
-        case "<":
-            return "^"
-        case "v":
-            return "<"
+        case Direction.UP:
+            return Direction.RIGHT
+        case Direction.RIGHT:
+            return Direction.DOWN
+        case Direction.LEFT:
+            return Direction.UP
+        case Direction.DOWN:
+            return Direction.LEFT
+
+
+def get_next_position(direction: str, x: int, y: int) -> tuple[int, int]:
+    match direction:
+        case Direction.RIGHT:
+            return x + 1, y
+        case Direction.LEFT:
+            return x - 1, y
+        case Direction.DOWN:
+            return x, y + 1
+        case Direction.UP:
+            return x, y - 1
+
+
+def get_direction_bounced_from_mirror(mirror: str, direction: str) -> str:
+    match mirror:
+        case "/":
+            match direction:
+                case Direction.UP | Direction.DOWN:
+                    return rotate_direction_90_right(direction)
+                case Direction.LEFT | Direction.RIGHT:
+                    return rotate_direction_90_left(direction)
+        case "\\":
+            match direction:
+                case Direction.UP | Direction.DOWN:
+                    return rotate_direction_90_left(direction)
+                case Direction.LEFT | Direction.RIGHT:
+                    return rotate_direction_90_right(direction)
+
+
+def traverse_direction(
+    matrix: list[list[str]],
+    lines: list[str],
+    direction: str,
+    starting_position: tuple[int, int],
+) -> list[list[str]]:
+    col_size = len(lines[0])
+    row_size = len(lines)
+
+    next_position = starting_position
+    out_of_bound = False
+    loop_count = 0
+
+    while not out_of_bound:
+        x, y = next_position
+
+        if matrix[y][x] in ["-", "|", "/", "\\"]:
+            loop_count += 1
+
+        if x < 0 or y < 0 or x > col_size or y > row_size or loop_count > 1:
+            return matrix
+
+        try:
+            char = lines[y][x]
+
+            match char:
+                case ".":
+                    matrix[y][x] = direction
+                    next_position = get_next_position(direction, x, y)
+                case "|":
+                    matrix[y][x] = "|"
+
+                    if direction in LEFT_RIGHT:
+                        # Go up
+                        next_position = get_next_position(Direction.UP, x, y)
+                        matrix = traverse_direction(matrix, lines, Direction.UP, next_position)
+
+                        # Go down
+                        next_position = get_next_position(Direction.DOWN, x, y)
+                        matrix = traverse_direction(matrix, lines, Direction.DOWN, next_position)
+                    else:
+                        next_position = get_next_position(direction, x, y)
+                case "-":
+                    matrix[y][x] = "-"
+                    if direction in UP_DOWN:
+                        # Go left
+                        next_position = get_next_position(Direction.LEFT, x, y)
+                        matrix = traverse_direction(matrix, lines, Direction.LEFT, next_position)
+
+                        # Go right
+                        next_position = get_next_position(Direction.RIGHT, x, y)
+                        matrix = traverse_direction(matrix, lines, Direction.RIGHT, next_position)
+                    else:
+                        next_position = get_next_position(direction, x, y)
+                case "/":
+                    matrix[y][x] = "/"
+                    direction = get_direction_bounced_from_mirror("/", direction)
+                    next_position = get_next_position(direction, x, y)
+                case "\\":
+                    matrix[y][x] = "\\"
+                    direction = get_direction_bounced_from_mirror("\\", direction)
+                    next_position = get_next_position(direction, x, y)
+
+        except IndexError:
+            out_of_bound = True
+
+    return matrix
 
 
 def part_one():
     lines = parse_input("test.txt")
     count = 0
 
-    direction = ">"
+    direction = Direction.RIGHT
 
     col_size = len(lines[0])
     row_size = len(lines)
 
     matrix = [[" " for i in range(col_size)] for j in range(row_size)]
 
-    # pprint(matrix)
-    next_position = (0, 0)
+    traversed_matrix = traverse_direction(matrix=matrix, lines=lines, direction=direction, starting_position=(0, 0))
 
-    while count < 20:
-        i, j = next_position
-        char = lines[j][i]
+    for row in traversed_matrix:
+        energized_tiles = ["#" if item != " " else " " for item in row]
+        count += len(energized_tiles)
+        print(energized_tiles)
 
-        match char:
-            case ".":
-                if direction == ">":
-                    for x in range(i, col_size):
-                        if lines[j][x] == ".":
-                            matrix[j][x] = direction
-                            count += 1
-                        else:
-                            next_position = (x, j)
-                            break
-                elif direction == "<":
-                    for x in range(i, 0, -1):
-                        if lines[j][x] == ".":
-                            matrix[j][x] = direction
-                            count += 1
-                        else:
-                            next_position = (x, j)
-                            break
-            case "|":
-                matrix[j][i] = "|"
-                if direction in LEFT_RIGHT:
-                    # Going down
-                    for y in range(j + 1, row_size):
-                        if lines[y][i] == ".":
-                            matrix[y][i] = "v"
-                            count += 1
-                        else:
-                            next_position = (i, y)
-                            direction = "v"
-                            break
-                    # Going up
-                    for y in range(j - 1, 0, -1):
-                        if lines[y][i] == ".":
-                            matrix[y][i] = "^"
-                            count += 1
-                        else:
-                            next_position = (i, y)
-                            direction = "^"
-                            break
-            case "-":
-                matrix[j][i] = "-"
-                if direction in UP_DOWN:
-                    # Going right
-                    for x in range(i + 1, row_size):
-                        if lines[j][x] == ".":
-                            matrix[j][x] = ">"
-                            count += 1
-                        else:
-                            next_position = (x, j)
-                            break
-                    # Going left
-                    for x in range(i - 1, 0, -1):
-                        if lines[j][x] == ".":
-                            matrix[j][x] = "<"
-                            count += 1
-                        else:
-                            next_position = (x, j)
-                            break
-
-            case _:
-                count += 1
-
-    pprint(matrix)
+    # pprint(traversed_matrix)
 
     print("Part 1: ", count)
 
