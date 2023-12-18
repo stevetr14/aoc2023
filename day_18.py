@@ -1,36 +1,54 @@
+from shapely import polygons, Point
+
 from utils import parse_input
 
 
-def get_info(x1: int, y1: int, x2: int, y2: int) -> int:
-    return x1 * y2 - y1 * x2
-
-
-def calculate_area(points: list[tuple[int, int]]) -> float:
-    n = len(points)
-    first_x, first_y = points[0]
-    prev_x, prev_y = first_x, first_y
-    res = 0
-
-    for i in range(1, n):
-        next_x, next_y = points[i]
-        res += get_info(prev_x, prev_y, next_x, next_y)
-        prev_x = next_x
-        prev_y = next_y
-
-    res += get_info(prev_x, prev_y, first_x, first_y)
-
-    return abs(res) / 2.0
-
-
 def part_one():
-    lines = parse_input("test.txt")
+    lines = parse_input("day_18.txt")
 
-    points = [
-        (0, 0), (5, 0), (6, 0), (6, 4), (6, 5), (5, 5), (4, 5), (4, 6), (4, 7), (5, 7), (6, 7), (6, 8), (6, 9),
-        (2, 9), (1, 9), (1, 8), (1, 7), (0, 7), (0, 6), (0, 5), (1, 5), (2, 5), (2, 3), (2, 2), (1, 2), (0, 2), (0, 1),
-    ]
+    all_x_values = []
+    all_y_values = []
+    x = 0
+    y = 0
 
-    # print(calculate_area(points))
+    all_x_values.append(x)
+    all_y_values.append(y)
+
+    area = 0
+
+    for line in lines:
+        direction, steps, colour = line.split(" ")
+        area += int(steps)
+
+        for i in range(int(steps)):
+            match direction:
+                case "R":
+                    x += 1
+                case "L":
+                    x -= 1
+                case "U":
+                    y -= 1
+                case "D":
+                    y += 1
+
+            all_x_values.append(x)
+            all_y_values.append(y)
+
+    max_x = max(all_x_values)
+    min_x = min(all_x_values)
+    max_y = max(all_y_values)
+    min_y = min(all_y_values)
+
+    points = [(i, j) for i, j in zip(all_x_values, all_y_values)]
+
+    polygon = polygons(points)
+
+    for i in range(min_x, max_x):
+        for j in range(min_y, max_y):
+            if polygon.contains(Point(i, j)):
+                area += 1
+
+    print("Part 1: ", area)
 
 
 if __name__ == "__main__":
