@@ -147,39 +147,66 @@ def traverse_direction(
     return matrix
 
 
-def part_one():
-    lines = parse_input("day_16.txt")
+def get_energized_tiles_count(lines: list[str], direction: str, x: int, y: int) -> int:
     count = 0
-
-    direction = Direction.RIGHT
-
     col_size = len(lines[0])
     row_size = len(lines)
 
     matrix = [[" " for i in range(col_size)] for j in range(row_size)]
-
     traversed_matrix = traverse_direction(
         matrix=matrix,
         lines=lines,
         direction=direction,
-        starting_position=(0, 0),
+        starting_position=(x, y),
     )
 
     for row in traversed_matrix:
         energized_tiles = ["#" if item != " " else " " for item in row]
         count += len([item for item in energized_tiles if item == "#"])
-        print(energized_tiles)
+
+    return count
+
+
+def part_one():
+    lines = parse_input("day_16.txt")
+    count = get_energized_tiles_count(lines, Direction.RIGHT, 0, 0)
 
     print("Part 1: ", count)
 
 
 def part_two():
-    lines = parse_input("test.txt")
-    total = 0
+    lines = parse_input("day_16.txt")
+    all_counts = []
 
-    print("Part 3: ", total)
+    col_size = len(lines[0])
+    row_size = len(lines)
+
+    # TOP ROW
+    for i in range(col_size):
+        # Start from top end
+        count = get_energized_tiles_count(lines, Direction.DOWN, i, 0)
+        all_counts.append(count)
+
+    for i in range(col_size):
+        # Start from bottom end
+        count = get_energized_tiles_count(lines, Direction.UP, i, row_size - 1)
+        all_counts.append(count)
+
+    # Exclude check on first and last row since they are part of the top and bottom check above
+    for j in range(1, row_size - 1):
+        # Start from left end
+        count = get_energized_tiles_count(lines, Direction.RIGHT, 0, j)
+        all_counts.append(count)
+
+    # Exclude check on first and last row since they are part of the top and bottom check above
+    for j in range(1, row_size - 1):
+        # Start from right end
+        count = get_energized_tiles_count(lines, Direction.LEFT, col_size - 1, j)
+        all_counts.append(count)
+
+    print("Part 2: ", max(all_counts))
 
 
 if __name__ == "__main__":
-    part_one()
-    # part_two()
+    # part_one()
+    part_two()
