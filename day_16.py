@@ -1,6 +1,3 @@
-from enum import Enum
-from pprint import pprint
-
 from utils import parse_input
 
 
@@ -72,9 +69,12 @@ def traverse_direction(
     lines: list[str],
     direction: str,
     starting_position: tuple[int, int],
+    tracked: list[tuple[int, int]] | None = None,
 ) -> list[list[str]]:
     col_size = len(lines[0])
     row_size = len(lines)
+
+    tracked = tracked or []
 
     next_position = starting_position
     out_of_bound = False
@@ -83,10 +83,10 @@ def traverse_direction(
     while not out_of_bound:
         x, y = next_position
 
-        if matrix[y][x] in ["-", "|", "/", "\\"]:
+        if (x, y) in tracked:
             loop_count += 1
 
-        if x < 0 or y < 0 or x > col_size or y > row_size or loop_count > 1:
+        if x < 0 or y < 0 or x > col_size or y > row_size or loop_count == 1:
             return matrix
 
         try:
@@ -101,24 +101,35 @@ def traverse_direction(
 
                     if direction in LEFT_RIGHT:
                         # Go up
-                        next_position = get_next_position(Direction.UP, x, y)
-                        matrix = traverse_direction(matrix, lines, Direction.UP, next_position)
+                        tracked.append((x, y))
+                        direction = Direction.UP
+                        next_position = get_next_position(direction, x, y)
+                        matrix = traverse_direction(matrix, lines, direction, next_position, tracked)
+                        # tracked.remove((x, y))
 
                         # Go down
-                        next_position = get_next_position(Direction.DOWN, x, y)
-                        matrix = traverse_direction(matrix, lines, Direction.DOWN, next_position)
+                        tracked.append((x, y))
+                        direction = Direction.DOWN
+                        next_position = get_next_position(direction, x, y)
+                        matrix = traverse_direction(matrix, lines, direction, next_position, tracked)
+                        # tracked.remove((x, y))
                     else:
                         next_position = get_next_position(direction, x, y)
                 case "-":
                     matrix[y][x] = "-"
+
                     if direction in UP_DOWN:
                         # Go left
-                        next_position = get_next_position(Direction.LEFT, x, y)
-                        matrix = traverse_direction(matrix, lines, Direction.LEFT, next_position)
+                        tracked.append((x, y))
+                        direction = Direction.LEFT
+                        next_position = get_next_position(direction, x, y)
+                        matrix = traverse_direction(matrix, lines, direction, next_position, tracked)
 
                         # Go right
-                        next_position = get_next_position(Direction.RIGHT, x, y)
-                        matrix = traverse_direction(matrix, lines, Direction.RIGHT, next_position)
+                        tracked.append((x, y))
+                        direction = Direction.RIGHT
+                        next_position = get_next_position(direction, x, y)
+                        matrix = traverse_direction(matrix, lines, direction, next_position, tracked)
                     else:
                         next_position = get_next_position(direction, x, y)
                 case "/":
@@ -137,7 +148,7 @@ def traverse_direction(
 
 
 def part_one():
-    lines = parse_input("test.txt")
+    lines = parse_input("day_16.txt")
     count = 0
 
     direction = Direction.RIGHT
@@ -147,14 +158,17 @@ def part_one():
 
     matrix = [[" " for i in range(col_size)] for j in range(row_size)]
 
-    traversed_matrix = traverse_direction(matrix=matrix, lines=lines, direction=direction, starting_position=(0, 0))
+    traversed_matrix = traverse_direction(
+        matrix=matrix,
+        lines=lines,
+        direction=direction,
+        starting_position=(0, 0),
+    )
 
     for row in traversed_matrix:
         energized_tiles = ["#" if item != " " else " " for item in row]
-        count += len(energized_tiles)
+        count += len([item for item in energized_tiles if item == "#"])
         print(energized_tiles)
-
-    # pprint(traversed_matrix)
 
     print("Part 1: ", count)
 
