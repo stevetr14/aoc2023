@@ -54,7 +54,7 @@ def part_two():
     lines = parse_input("test.txt")
     total = 0
 
-    print("Part 3: ", total)
+    print("Part 2: ", total)
 
 
 if __name__ == "__main__":
