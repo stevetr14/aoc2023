@@ -1,4 +1,5 @@
 import operator
+import time
 from collections import OrderedDict
 
 from utils import parse_input
@@ -32,17 +33,12 @@ def process_workflow(
         return workflow_list[-1]
 
 
-def part_one():
-    workflow_part, rating_part = parse_input("day_19.txt", "\n\n")
-    total = 0
-
+def get_workflow_map(workflows: list[str]) -> dict[str, list]:
+    """
+    Construct a dictionary for the unique workflows (some conditions may contain the same category more than once!).
+    """
     workflow_map = dict()
-    rating_map = dict()
 
-    workflows = workflow_part.strip().split("\n")
-    ratings = rating_part.strip().split("\n")
-
-    # Construct a dictionary for the unique workflows (some conditions may contain the same category more than once!)
     for workflow in workflows:
         name, rules = workflow.split("{")
         rule_map = list()
@@ -59,6 +55,20 @@ def part_one():
         # Add the final fallback rule last
         rule_map.append(rules[-1])
         workflow_map[name] = rule_map
+
+    return workflow_map
+
+
+def part_one():
+    workflow_part, rating_part = parse_input("day_19.txt", "\n\n")
+    total = 0
+
+    rating_map = dict()
+
+    workflows = workflow_part.strip().split("\n")
+    ratings = rating_part.strip().split("\n")
+
+    workflow_map = get_workflow_map(workflows)
 
     # Construct a dictionary of part ratings.
     for index, rating in enumerate(ratings):
@@ -83,12 +93,35 @@ def part_one():
 
 
 def part_two():
-    lines = parse_input("test.txt")
+    start = time.time()
+    workflow_part, rating_part = parse_input("test.txt", "\n\n")
     total = 0
 
+    workflows = workflow_part.strip().split("\n")
+
+    workflow_map = get_workflow_map(workflows)
+
+    for s in range(1, 4001):
+        rating_by_category = OrderedDict({
+            "x": 1000,
+            "m": 1000,
+            "a": 3000,
+            "s": s,
+        })
+        output = process_workflow(workflow_map, rating_by_category, "in")
+
+        while output not in ("A", "R"):
+            output = process_workflow(workflow_map, rating_by_category, output)
+
+        if output == "A":
+            total += 1
+
+    end = time.time()
+
     print("Part 2: ", total)
+    print(end - start)
 
 
 if __name__ == "__main__":
-    part_one()
-    # part_two()
+    # part_one()
+    part_two()
