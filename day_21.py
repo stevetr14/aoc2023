@@ -53,6 +53,33 @@ def part_one():
     print("Part 1: ", total)
 
 
+def part_two():
+    lines = parse_input("test.txt")
+    matrix = [list(line) for line in lines]
+
+    tracked_positions = []
+
+    for i, line in enumerate(lines):
+        for j, c in enumerate(line):
+            if c == "S":
+                tracked_positions.append((j, i))
+                break
+
+    matrix, tracked_positions = mark_garden_plots(matrix, tracked_positions)
+    total = 0
+    steps = 1
+
+    while steps != 10:
+        matrix, tracked_positions = mark_garden_plots(matrix, tracked_positions)
+        steps += 1
+
+    for row in matrix:
+        print("".join(row))
+        total += (len([item for item in row if item in ["O", "S"]]))
+
+    print("Part 2: ", total)
+
+
 if __name__ == "__main__":
-    part_one()
-    # part_two()
+    # part_one()
+    part_two()
