@@ -1,7 +1,30 @@
 from collections import Counter
-from itertools import pairwise
 
 from utils import parse_input
+
+
+def get_marked_plots(
+    matrix: list[list[str]],
+    tracked_positions: set[tuple[int, int]],
+    max_x: int,
+    max_y: int,
+) -> tuple[list[list[str]], set[tuple[int, int]]]:
+    new_tracked_positions = set()
+
+    for position in tracked_positions:
+        x, y = position
+
+        # Wrap around using mod on the matrix
+        if matrix[y % max_y][(x + 1) % max_x] != "#":
+            new_tracked_positions.add((x + 1, y))
+        if matrix[y % max_y][(x - 1) % max_x] != "#":
+            new_tracked_positions.add((x - 1, y))
+        if matrix[(y + 1) % max_y][x % max_y] != "#":
+            new_tracked_positions.add((x, y + 1))
+        if matrix[(y - 1) % max_y][x % max_y] != "#":
+            new_tracked_positions.add((x, y - 1))
+
+    return matrix, new_tracked_positions
 
 
 def mark_garden_plots(
@@ -57,46 +80,38 @@ def part_one():
 
 
 def part_two():
-    lines = parse_input("test.txt")
+    lines = parse_input("day_21.txt")
     matrix = [list(line) for line in lines]
 
+    max_length = len(matrix)
+    starting_index = int(max_length / 2)
+
     total = 0
-    tracked_positions = []
 
-    for i, line in enumerate(lines):
-        for j, c in enumerate(line):
-            if c == "S":
-                tracked_positions.append((j, i))
-                break
+    # S always starts at the center
+    tracked_positions = {(starting_index, starting_index)}
 
-    matrix, tracked_positions = mark_garden_plots(matrix, tracked_positions)
+    matrix, tracked_positions = get_marked_plots(matrix, tracked_positions, max_length, max_length)
     steps = 1
 
     a = []
-    indices = []
 
-    for i in range(2, 121):
-        test = 0
-
+    for i in range(2, 64):
         while steps != i:
-            matrix, tracked_positions = mark_garden_plots(matrix, tracked_positions)
+            matrix, tracked_positions = get_marked_plots(matrix, tracked_positions, max_length, max_length)
             steps += 1
 
-        for row in matrix:
-            if i == 100:
-                print("".join(row))
-            test += Counter(row)["O"]
+            print(i, len(tracked_positions))
+            a.append(len(tracked_positions))
 
-        a.append(test)
-        indices.append(i)
-        # print(i, "-", test)
+    for item in tracked_positions:
+        x, y = item
+        matrix[y][x] = "O"
 
-    b = [j - i for i, j in pairwise(a)]
-    print(a)
-    print(indices)
-    print(b)
+    for row in matrix:
+        print("".join(row))
 
-    # print("Part 2: ", total)
+    print("Part 2: ", total)
 
 
 if __name__ == "__main__":
