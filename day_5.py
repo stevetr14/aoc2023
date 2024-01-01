@@ -17,7 +17,7 @@ def construct_plan():
     return plan
 
 
-def get_target_from_seed(seed: int, rows_: list[list[int, int, int]]) -> int:
+def get_target_from_seed(seed: int, rows_: list[list[int]]) -> int:
     for row in rows_:
         destination, source, length = row
         if seed < source:
@@ -36,7 +36,7 @@ def get_target_from_seed(seed: int, rows_: list[list[int, int, int]]) -> int:
         return seed
 
 
-def get_seed_from_target(target: int, rows_: list[list[int, int, int]]) -> int:
+def get_seed_from_target(target: int, rows_: list[list[int]]) -> int:
     for row in rows_:
         destination, source, length = row
         if target > destination + length:
